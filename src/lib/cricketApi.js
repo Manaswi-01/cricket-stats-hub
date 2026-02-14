@@ -1,22 +1,19 @@
+import { staticPlayers } from '@/data/players';
+import { staticTeams } from '@/data/teams';
+import { staticMatches } from '@/data/matches';
+
 /**
- * Cricket API Service
- * Handles communication with CricketData.org API
- * Falls back to static data if API is unavailable or rate limited
+ * Base API configuration
  */
-
-import { players as staticPlayers } from '@/data/players';
-import { teams as staticTeams } from '@/data/teams';
-import { matches as staticMatches } from '@/data/matches';
-
-const API_KEY = process.env.CRICKET_API_KEY;
 const API_BASE_URL = process.env.CRICKET_API_BASE_URL || 'https://api.cricapi.com/v1';
-const USE_LIVE_API = !!API_KEY; // Only use live API if key is configured
+const API_KEY = process.env.CRICKET_API_KEY;
+const USE_LIVE_API = !!API_KEY;
 
 /**
- * Fetch data from Cricket API with error handling
+ * Fetch data from the Cricket API
  */
 async function fetchFromAPI(endpoint, params = {}) {
-    if (!USE_LIVE_API) {
+    if (!API_KEY) {
         throw new Error('API key not configured');
     }
 
@@ -28,14 +25,11 @@ async function fetchFromAPI(endpoint, params = {}) {
     });
 
     const response = await fetch(url.toString(), {
-        headers: {
-            'Accept': 'application/json',
-        },
-        cache: 'no-store', // Ensure fresh data for SSR
+        next: { revalidate: 0 } // Always fetch fresh data
     });
 
     if (!response.ok) {
-        throw new Error(`API error: ${response.status}`);
+        throw new Error(`API request failed: ${response.statusText}`);
     }
 
     return response.json();
@@ -46,17 +40,15 @@ async function fetchFromAPI(endpoint, params = {}) {
  */
 function mapPlayerData(apiPlayer) {
     return {
-        id: apiPlayer.id || apiPlayer.name.toLowerCase().replace(/\s+/g, '-'),
-        name: apiPlayer.name || apiPlayer.playerName,
-        country: apiPlayer.country,
-        role: apiPlayer.role || apiPlayer.playingRole || 'All-rounder',
-        battingStyle: apiPlayer.battingStyle || 'Right-hand bat',
-        bowlingStyle: apiPlayer.bowlingStyle || 'Right-arm medium',
+        id: apiPlayer.id,
+        name: apiPlayer.name,
+        country: apiPlayer.country || apiPlayer.team,
+        role: apiPlayer.role || apiPlayer.playerRole,
         stats: {
-            matches: apiPlayer.stats?.matches || 0,
-            runs: apiPlayer.stats?.runs || 0,
-            average: parseFloat(apiPlayer.stats?.average || 0),
-            strikeRate: parseFloat(apiPlayer.stats?.strikeRate || 0),
+            matches: apiPlayer.stats?.matches || apiPlayer.matchesPlayed || 0,
+            runs: apiPlayer.stats?.runs || apiPlayer.totalRuns || 0,
+            average: apiPlayer.stats?.average || apiPlayer.battingAverage || 0,
+            strikeRate: apiPlayer.stats?.strikeRate || apiPlayer.strikeRate || 0,
             centuries: apiPlayer.stats?.centuries || 0,
             fifties: apiPlayer.stats?.fifties || 0,
             highestScore: apiPlayer.stats?.highestScore || 0,
@@ -79,7 +71,8 @@ export async function getAllPlayers() {
         if (USE_LIVE_API) {
             const data = await fetchFromAPI('players');
             if (data && data.data) {
-                return data.data.map(mapPlayerData);
+                // Map API players to our schema
+                return data.data.slice(0, 25).map(mapPlayerData);
             }
         }
     } catch (error) {
@@ -91,25 +84,6 @@ export async function getAllPlayers() {
 }
 
 /**
- * Get player by ID - tries API first, falls back to static
- */
-export async function getPlayer(id) {
-    try {
-        if (USE_LIVE_API) {
-            const data = await fetchFromAPI(`players/${id}`);
-            if (data && data.data) {
-                return mapPlayerData(data.data);
-            }
-        }
-    } catch (error) {
-        console.warn(`Live API unavailable for player ${id}, using static data:`, error.message);
-    }
-
-    // Fallback to static data
-    return staticPlayers.find(p => p.id === id);
-}
-
-/**
  * Get all teams - currently uses static data
  * TODO: Implement live API mapping when available
  */
@@ -117,13 +91,6 @@ export async function getAllTeams() {
     // CricAPI doesn't have a comprehensive teams endpoint
     // Use static data with current rankings
     return staticTeams;
-}
-
-/**
- * Get team by ID - currently uses static data
- */
-export async function getTeam(id) {
-    return staticTeams.find(t => t.id === id);
 }
 
 /**
@@ -160,15 +127,28 @@ export async function getMatches() {
 }
 
 /**
- * Get match by ID
+ * Get match by ID - tries API first, falls back to static
  */
-export async function getMatch(id) {
+export async function getMatchDetails(id) {
     try {
         if (USE_LIVE_API) {
-            const data = await fetchFromAPI(`matches/${id}`);
+            const data = await fetchFromAPI(`match_info`, { id });
             if (data && data.data) {
-                // TODO: Map API match data
-                return data.data;
+                const match = data.data;
+                return {
+                    id: match.id,
+                    title: `${match.teams[0]} vs ${match.teams[1]} - ${match.matchType}`,
+                    date: match.dateTimeGMT,
+                    venue: match.venue,
+                    format: match.matchType,
+                    team1: match.teams[0],
+                    team2: match.teams[1],
+                    winner: match.status.includes(match.teams[0]) ? match.teams[0] : match.teams[1],
+                    scorecard: match.score || {},
+                    description: match.status,
+                    imageUrl: `/images/matches/${match.id}.jpg`,
+                    highlights: []
+                };
             }
         }
     } catch (error) {
@@ -193,4 +173,28 @@ export async function getCurrentMatches() {
         console.warn('Could not fetch current matches:', error.message);
         return [];
     }
+}
+
+/**
+ * Get team by ID
+ */
+export async function getTeamById(id) {
+    const teams = await getAllTeams();
+    return teams.find(team => team.id === id) || null;
+}
+
+/**
+ * Get match by ID
+ */
+export async function getMatchById(id) {
+    const matches = await getMatches();
+    return matches.find(match => match.id === id) || null;
+}
+
+/**
+ * Get player by ID
+ */
+export async function getPlayerById(id) {
+    const players = await getAllPlayers();
+    return players.find(player => player.id === id) || null;
 }

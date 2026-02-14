@@ -1,19 +1,15 @@
 import { notFound } from 'next/navigation';
-import { getAllTeamIds } from '@/data/teams';
+import { getTeamById, getAllTeams } from '@/lib/cricketApi';
 import { getPlayerById } from '@/data/players';
 import TeamSchema from '@/components/schemas/TeamSchema';
 import PlayerCard from '@/components/PlayerCard';
 import { FaTrophy, FaMedal } from 'react-icons/fa';
 
-// Force dynamic rendering (SSR)
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
-
 // Generate static params
 export async function generateStaticParams() {
-  const teamIds = getAllTeamIds();
-  return teamIds.map((id) => ({
-    id: id,
+  const teams = await getAllTeams();
+  return teams.map((team) => ({
+    id: team.id,
   }));
 }
 
