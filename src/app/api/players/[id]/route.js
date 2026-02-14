@@ -1,4 +1,4 @@
-import { getPlayer } from '@/lib/cricketApi';
+import { getPlayerById } from '@/lib/cricketApi';
 import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
@@ -8,7 +8,7 @@ export async function GET(request, { params }) {
         const { id } = await params;
 
         // Fetch from live API or static data (automatic fallback)
-        const player = await getPlayer(id);
+        const player = await getPlayerById(id);
 
         if (!player) {
             return NextResponse.json(

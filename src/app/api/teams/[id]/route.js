@@ -1,4 +1,4 @@
-import { getTeam } from '@/lib/cricketApi';
+import { getTeamById } from '@/lib/cricketApi';
 import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
@@ -7,7 +7,7 @@ export async function GET(request, { params }) {
     try {
         const { id } = await params;
 
-        const team = await getTeam(id);
+        const team = await getTeamById(id);
 
         if (!team) {
             return NextResponse.json(
