@@ -21,7 +21,9 @@ export const metadata = {
 
 export default async function HomePage() {
     // Fetch data from API with SSR
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+    // Use VERCEL_URL on Vercel, localhost for development
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ||
+        (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
 
     const [playersRes, teamsRes, matchesRes] = await Promise.all([
         fetch(`${baseUrl}/api/players`, { cache: 'no-store' }),

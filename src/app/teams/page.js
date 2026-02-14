@@ -15,7 +15,8 @@ export const metadata = {
 
 export default async function TeamsPage() {
     // Fetch all teams from API with SSR
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ||
+        (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
     const res = await fetch(`${baseUrl}/api/teams`, {
         cache: 'no-store',
         headers: {
