@@ -80,7 +80,7 @@ export default async function HomePage() {
                                 <p className="text-gray-700 font-medium">International Teams</p>
                             </div>
                             <div className="text-center p-6 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl">
-                                <FaFire className="text-5xl text-purple-600 mx-auto mb-4" />
+                                <FaUsers className="text-5xl text-purple-600 mx-auto mb-4" />
                                 <p className="text-4xl font-bold text-purple-600 mb-2">{allMatches.length}</p>
                                 <p className="text-gray-700 font-medium">Matches Available</p>
                             </div>
