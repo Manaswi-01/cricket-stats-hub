@@ -1,30 +1,23 @@
 import MatchCard from '@/components/MatchCard';
+import { getMatches } from '@/lib/cricketApi';
 
 // Force dynamic rendering (SSR)
 export const dynamic = 'force-dynamic';
 
 export const metadata = {
-    title: 'Cricket Match Scorecards & Results - Recent Matches | CricketStats Hub',
-    description: 'View complete cricket match scorecards, results, and highlights. Coverage of Test matches, ODIs, and T20Is with detailed statistics and analysis.',
+    title: 'Cricket Matches - Live Scores & Match Results | CricketStats Hub',
+    description: 'View recent cricket match results, scorecards, and highlights. Get detailed information about international cricket matches including Test, ODI, and T20 fixtures.',
+    keywords: 'cricket matches, live scores, match results, scorecards, cricket highlights, cricket fixtures, international cricket',
     openGraph: {
-        title: 'Cricket Match Scorecards & Results',
-        description: 'Detailed match scorecards and cricket match results',
+        title: 'Cricket Matches - Recent Results & Scorecards',
+        description: 'Browse recent cricket match results and detailed scorecards.',
         type: 'website',
     },
 };
 
 export default async function MatchesPage() {
-    // Fetch all matches from API with SSR
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ||
-        (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
-    const res = await fetch(`${baseUrl}/api/matches`, {
-        cache: 'no-store',
-        headers: {
-            'Content-Type': 'application/json',
-        }
-    });
-
-    const { data: matches } = await res.json();
+    // Fetch all matches directly from API function
+    const matches = await getMatches();
 
     return (
         <div className="min-h-screen">

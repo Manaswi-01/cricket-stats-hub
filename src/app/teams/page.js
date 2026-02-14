@@ -1,30 +1,20 @@
+import { getAllTeams } from '@/lib/cricketApi';
 import TeamCard from '@/components/TeamCard';
 
-// Force dynamic rendering (SSR)
-export const dynamic = 'force-dynamic';
-
 export const metadata = {
-    title: 'Cricket Team Rankings & Stats - International Teams | CricketStats Hub',
-    description: 'View current ICC cricket team rankings, statistics, and squad details for all international cricket teams. Test, ODI, and T20 rankings updated regularly.',
+    title: 'Cricket Teams - ICC Rankings & Team Stats | CricketStats Hub',
+    description: 'View ICC cricket team rankings, statistics, and profiles for Test, ODI, and T20 formats. Explore team records, achievements, and current world standings.',
+    keywords: 'cricket teams, ICC rankings, team stats, Test cricket, ODI cricket, T20 cricket, world rankings, cricket nations',
     openGraph: {
-        title: 'Cricket Team Rankings & Statistics',
-        description: 'Current ICC rankings and team statistics for international cricket',
+        title: 'Cricket Teams & ICC Rankings - Complete Team Stats',
+        description: 'ICC team rankings and comprehensive statistics for international cricket teams.',
         type: 'website',
     },
 };
 
 export default async function TeamsPage() {
-    // Fetch all teams from API with SSR
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ||
-        (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
-    const res = await fetch(`${baseUrl}/api/teams`, {
-        cache: 'no-store',
-        headers: {
-            'Content-Type': 'application/json',
-        }
-    });
-
-    const { data: teams } = await res.json();
+    // Fetch all teams directly from API function
+    const teams = await getAllTeams();
 
     return (
         <div className="min-h-screen">

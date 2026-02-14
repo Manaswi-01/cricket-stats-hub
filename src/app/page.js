@@ -1,39 +1,35 @@
 import Link from 'next/link';
+import { getAllPlayers, getAllTeams, getMatches } from '@/lib/cricketApi';
 import PlayerCard from '@/components/PlayerCard';
 import TeamCard from '@/components/TeamCard';
 import MatchCard from '@/components/MatchCard';
+import { FaTrophy, FaUsers, FaChartLine } from 'react-icons/fa';
 import OrganizationSchema from '@/components/schemas/OrganizationSchema';
-import { FaTrophy, FaChartLine, FaFire } from 'react-icons/fa';
-
-// Force dynamic rendering (SSR)
-export const dynamic = 'force-dynamic';
 
 export const metadata = {
-    title: 'CricketStats Hub - Live Cricket Statistics, Player Profiles & Match Analysis',
-    description: 'Complete cricket statistics platform with live player stats, team rankings, match scorecards, and detailed performance analysis. Track your favorite players and teams with real-time data.',
-    keywords: 'cricket statistics, live scores, player stats, team rankings, cricket analysis, match scorecard, Virat Kohli, cricket data',
+    title: 'Cricket Stats Hub - Live Player Stats, Team Rankings & Match Scores',
+    description: 'Your ultimate destination for cricket statistics. View live player stats, ICC team rankings, match scorecards, and comprehensive cricket data. Updated daily with the latest cricket news and insights.',
+    keywords: 'cricket stats, player statistics, team rankings, ICC rankings, match scores, cricket data, live cricket, cricket news, cricket players',
     openGraph: {
-        title: 'CricketStats Hub - Live Cricket Statistics',
-        description: 'Complete cricket statistics platform with player profiles, team rankings, and match analysis',
+        title: 'Cricket Stats Hub - Live Cricket Statistics & Rankings',
+        description: 'Comprehensive cricket statistics, player profiles, team rankings, and live match scores.',
         type: 'website',
+        images: [
+            {
+                url: '/og-image.jpg',
+                width: 1200,
+                height: 630,
+                alt: 'Cricket Stats Hub',
+            },
+        ],
     },
 };
 
 export default async function HomePage() {
-    // Fetch data from API with SSR
-    // Use VERCEL_URL on Vercel, localhost for development
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ||
-        (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
-
-    const [playersRes, teamsRes, matchesRes] = await Promise.all([
-        fetch(`${baseUrl}/api/players`, { cache: 'no-store' }),
-        fetch(`${baseUrl}/api/teams`, { cache: 'no-store' }),
-        fetch(`${baseUrl}/api/matches`, { cache: 'no-store' }),
-    ]);
-
-    const { data: allPlayers } = await playersRes.json();
-    const { data: allTeams } = await teamsRes.json();
-    const { data: allMatches } = await matchesRes.json();
+    // Fetch data directly from API functions (no HTTP needed for SSR)
+    const allPlayers = await getAllPlayers();
+    const allTeams = await getAllTeams();
+    const allMatches = await getMatches();
 
     // Get featured content
     const featuredPlayers = allPlayers.slice(0, 6);

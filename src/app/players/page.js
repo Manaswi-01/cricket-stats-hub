@@ -1,30 +1,20 @@
 import PlayerCard from '@/components/PlayerCard';
-
-// Force dynamic rendering (SSR)
-export const dynamic = 'force-dynamic';
+import { getAllPlayers } from '@/lib/cricketApi';
 
 export const metadata = {
-    title: 'Cricket Players Stats & Profiles - All Players | CricketStats Hub',
-    description: 'Browse comprehensive cricket player statistics and profiles. View detailed stats, career achievements, and performance analysis for top international cricket players.',
+    title: 'Cricket Players - Stats, Profiles & Career Records | CricketStats Hub',
+    description: 'Browse comprehensive cricket player statistics, profiles, and career records. View batting averages, centuries, wickets, and achievements of top international cricket players.',
+    keywords: 'cricket players, player stats, batting average, cricket profiles, international cricket, player records, cricket careers',
     openGraph: {
-        title: 'Cricket Players - Stats & Profiles',
-        description: 'Comprehensive cricket player statistics and profiles',
+        title: 'Cricket Players Directory - Complete Stats & Profiles',
+        description: 'Explore detailed statistics and profiles of international cricket players.',
         type: 'website',
     },
 };
 
 export default async function PlayersPage() {
-    // Fetch all players from API with SSR
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ||
-        (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
-    const res = await fetch(`${baseUrl}/api/players`, {
-        cache: 'no-store',
-        headers: {
-            'Content-Type': 'application/json',
-        }
-    });
-
-    const { data: players } = await res.json();
+    // Fetch all players directly from API function
+    const players = await getAllPlayers();
 
     return (
         <div className="min-h-screen">
