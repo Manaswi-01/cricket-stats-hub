@@ -1,18 +1,14 @@
 import { notFound } from 'next/navigation';
-import { getAllMatchIds } from '@/data/matches';
-import { getTeamById } from '@/data/teams';
+import { getMatchById, getMatches } from '@/lib/cricketApi';
+import { getTeamById } from '@/lib/cricketApi';
 import MatchSchema from '@/components/schemas/MatchSchema';
 import { FaTrophy, FaCalendar, FaMapMarkerAlt } from 'react-icons/fa';
 
-// Force dynamic rendering (SSR)
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
-
 // Generate static params
 export async function generateStaticParams() {
-  const matchIds = getAllMatchIds();
-  return matchIds.map((id) => ({
-    id: id,
+  const matches = await getMatches();
+  return matches.map((match) => ({
+    id: match.id,
   }));
 }
 
@@ -20,18 +16,14 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }) {
   const { id } = await params;
 
-  // Fetch match data from API
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ||
-    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
-  const res = await fetch(`${baseUrl}/api/matches/${id}`, { cache: 'no-store' });
+  // Fetch match directly from API function
+  const match = await getMatchById(id);
 
-  if (!res.ok) {
+  if (!match) {
     return {
       title: 'Match Not Found | CricketStats Hub',
     };
   }
-
-  const { data: match } = await res.json();
 
   return {
     title: `${match.title} - Match Summary & Scorecard | CricketStats Hub`,
@@ -65,25 +57,16 @@ export async function generateMetadata({ params }) {
 export default async function MatchPage({ params }) {
   const { id } = await params;
 
-  // Fetch match data from API with SSR
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ||
-    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
-  const res = await fetch(`${baseUrl}/api/matches/${id}`, {
-    cache: 'no-store',
-    headers: {
-      'Content-Type': 'application/json',
-    }
-  });
+  // Fetch match directly from API function
+  const match = await getMatchById(id);
 
-  if (!res.ok) {
+  if (!match) {
     notFound();
   }
 
-  const { data: match } = await res.json();
-
-  const team1 = getTeamById(match.team1);
-  const team2 = getTeamById(match.team2);
-  const winningTeam = getTeamById(match.winner);
+  const team1 = await getTeamById(match.team1);
+  const team2 = await getTeamById(match.team2);
+  const winningTeam = await getTeamById(match.winner);
 
   return (
     <>

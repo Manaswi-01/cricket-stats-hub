@@ -17,18 +17,14 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }) {
   const { id } = await params;
 
-  // Fetch from API
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ||
-    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
-  const res = await fetch(`${baseUrl}/api/teams/${id}`, { cache: 'no-store' });
+  // Fetch team directly from API function
+  const team = await getTeamById(id);
 
-  if (!res.ok) {
+  if (!team) {
     return {
       title: 'Team Not Found | CricketStats Hub',
     };
   }
-
-  const { data: team } = await res.json();
 
   return {
     title: `${team.name} Cricket Team Stats - Rankings, Players & Records | CricketStats Hub`,
@@ -62,21 +58,12 @@ export async function generateMetadata({ params }) {
 export default async function TeamPage({ params }) {
   const { id } = await params;
 
-  // Fetch team data from API with SSR
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ||
-    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
-  const res = await fetch(`${baseUrl}/api/teams/${id}`, {
-    cache: 'no-store',
-    headers: {
-      'Content-Type': 'application/json',
-    }
-  });
+  // Fetch team directly from API function
+  const team = await getTeamById(id);
 
-  if (!res.ok) {
+  if (!team) {
     notFound();
   }
-
-  const { data: team } = await res.json();
 
   // Get top players
   const topPlayers = team.topPlayers.map(playerId => getPlayerById(playerId)).filter(Boolean);
