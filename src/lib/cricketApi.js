@@ -1,6 +1,6 @@
-import { staticPlayers } from '@/data/players';
-import { staticTeams } from '@/data/teams';
-import { staticMatches } from '@/data/matches';
+import { players as staticPlayers } from '@/data/players';
+import { teams as staticTeams } from '@/data/teams';
+import { matches as staticMatches } from '@/data/matches';
 
 /**
  * Base API configuration
