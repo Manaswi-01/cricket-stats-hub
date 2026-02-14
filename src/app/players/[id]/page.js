@@ -21,7 +21,8 @@ export async function generateMetadata({ params }) {
   const { id } = await params;
 
   // Fetch player data from API
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ||
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
   const res = await fetch(`${baseUrl}/api/players/${id}`, { cache: 'no-store' });
 
   if (!res.ok) {
@@ -65,7 +66,8 @@ export default async function PlayerPage({ params }) {
   const { id } = await params;
 
   // Fetch player data from API with SSR
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ||
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
   const res = await fetch(`${baseUrl}/api/players/${id}`, {
     cache: 'no-store',
     headers: {
